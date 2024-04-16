@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Log Viewer</title>
+    <style>
+        .log-container {
+            display: flex;
+            justify-content: space-between;
+        }
+        .error-logs {
+            flex: 1;
+            color: red;
+            border-right: 1px solid black;
+            padding-right: 10px;
+        }
+        .success-logs {
+            flex: 1;
+            color: green;
+            padding-left: 10px;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.1.3/socket.io.js"></script>
+</head>
+<body>
+    <h1>Log Viewer</h1>
+    <button id="restartButton">Restart PM2</button>
+    <div class="log-container">
+        <div class="error-logs" id="error-logs">
+            <h2>Error Logs</h2>
+            <pre id="errorLog"></pre>
+        </div>
+        <div class="success-logs" id="success-logs">
+            <h2>Success Logs</h2>
+            <pre id="outLog"></pre>
+        </div>
+    </div>
+
+    <script>
+        const socket = io();
+
+        socket.on('connect', () => {
+            console.log('Connected to server');
+        });
+
+        socket.on('outLogFileChange', (logData) => {
+            updateLog('outLog', logData);
+        });
+
+        socket.on('errorLogFileChange', (logData) => {
+            updateLog('errorLog', logData);
+        });
+
+        socket.on('disconnect', () => {
+            console.log('Disconnected from server');
+        });
+
+        document.getElementById("restartButton").addEventListener("click", function() {
+            // Send a request to the server to trigger the script execution
+            fetch("/run-script", {
+                method: "POST"
+            });
+        });
+
+        function updateLog(logType, logData) {
+            const logElement = document.getElementById(logType);
+            logElement.textContent = logData;
+        }
+    </script>
+</body>
+</html>
